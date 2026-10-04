@@ -26,6 +26,9 @@
 <section id="devis" class="section"><div class="listtop"><h2>Devis</h2><button onclick="openDocument('devis')">+ Devis</button></div><div class="search"><span>🔎</span><input id="devisSearch" placeholder="Rechercher devis ou client…" oninput="renderDocs('devis')"></div><div class="card" id="devisList"></div></section>
 <section id="factures" class="section"><div class="listtop"><h2>Factures</h2><button class="green" onclick="openDocument('facture')">+ Facture</button></div><div class="search"><span>🔎</span><input id="factureSearch" placeholder="Rechercher facture ou client…" oninput="renderDocs('facture')"></div><div class="card" id="factureList"></div></section>
 <section id="tarifs" class="section"><h2>Tarifs SIONELEC</h2><div class="card tarif-grid-card">
+<h3>📚 Bible de chiffrage SIONELEC — BatiChiffrage 2026</h3>
+<div class="notice">Bible interne SIONELEC : forfaits de rénovation, prix au m², types d’appartements et temps estimatifs.</div>
+<div class="actions" style="margin-bottom:10px"><button class="purple" onclick="openBible()">📖 Ouvrir la bible</button><button class="secondary" onclick="window.open('Bible_SIONELEC_BatiChiffrage_2026_COMPLETE_AVEC_RENOVATIONS.pdf','_blank')">⬇️ PDF</button></div>
 <h3>📋 Grille tarifaire complète SIONELEC</h3>
 <img class="tarif-grid-img" src="grille-tarifs-sionelec.jpeg" alt="Grille tarifaire SIONELEC" onclick="openTarifGrid()">
 <div class="tarif-grid-actions">
@@ -39,6 +42,13 @@
 </main>
 <nav><button data-tab="home" class="active" onclick="show('home')">🏠<br>Accueil</button><button data-tab="clients" onclick="show('clients')">👤<br>Clients</button><button data-tab="devis" onclick="show('devis')">📋<br>Devis</button><button data-tab="factures" onclick="show('factures')">🧾<br>Factures</button><button data-tab="paiements" onclick="show('paiements')">💳<br>Paiements</button><button data-tab="settings" onclick="show('settings')">⚙️<br>Entreprise</button></nav>
 
+
+<div id="bibleViewer" class="modal">
+  <div class="sheet" style="height:96vh;max-height:96vh">
+    <div class="sheethead"><h3>📚 Bible SIONELEC</h3><button class="close gray" onclick="closeBible()">✕</button></div>
+    <iframe src="Bible_SIONELEC_BatiChiffrage_2026_COMPLETE_AVEC_RENOVATIONS.pdf" style="width:100%;height:calc(100% - 55px);border:0;border-radius:12px"></iframe>
+  </div>
+</div>
 <div id="tarifViewer" class="modal" onclick="if(event.target===this)closeTarifGrid()">
   <div class="sheet" style="max-height:96vh">
     <div class="sheethead"><h3>Grille tarifaire SIONELEC</h3><button class="close gray" onclick="closeTarifGrid()">✕</button></div>
@@ -58,6 +68,8 @@ function eur(n){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:
 function dateFR(d){return d?new Date(d).toLocaleDateString('fr-FR'):''}
 function today(){return new Date().toISOString().slice(0,10)}
 
+function openBible(){document.getElementById('bibleViewer').classList.add('open')}
+function closeBible(){document.getElementById('bibleViewer').classList.remove('open')}
 function openTarifGrid(){document.getElementById('tarifViewer').classList.add('open')}
 function closeTarifGrid(){document.getElementById('tarifViewer').classList.remove('open')}
 function show(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));renderAll();window.scrollTo(0,0)}
