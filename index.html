@@ -26,6 +26,13 @@
 .chantier-item b{display:block;margin-bottom:4px}
 .chantier-photo{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:8px}
 .chantier-small{font-size:12px;opacity:.7}
+
+.materiel-card{margin-top:14px;padding:16px}
+.materiel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.materiel-grid input,.materiel-grid select{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #ddd}
+.materiel-list{display:grid;gap:8px;margin-top:10px}
+.materiel-item{padding:11px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.materiel-total{font-weight:700;margin-top:10px}
 </style></head><body>
 <header><img class="logo" src="logo-sionelec.jpeg"><div><div class="brand">SIONELEC PRO</div><div class="sub">Électricité générale • Installation • Rénovation • Dépannage</div></div></header>
 <main>
@@ -40,6 +47,23 @@
 <input id="chantierPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="addSionelecPhoto(event)">
 <div id="chantierList" class="chantier-list"></div>
 </div>
+<div class="card materiel-card">
+<h3>📦 Matériel & marge chantier</h3>
+<p class="chantier-small">Ajoute tes fournitures, prix d'achat et prix de vente pour suivre automatiquement la marge.</p>
+<div class="materiel-grid">
+<input id="matNom" placeholder="Matériel">
+<input id="matQte" type="number" min="0" step="0.01" placeholder="Quantité">
+<input id="matAchat" type="number" min="0" step="0.01" placeholder="Prix achat HT / unité">
+<input id="matVente" type="number" min="0" step="0.01" placeholder="Prix vente HT / unité">
+</div>
+<div class="materiel-grid" style="margin-top:8px">
+<button class="blue" onclick="addSionelecMateriel()">➕ Ajouter</button>
+<button class="secondary" onclick="clearSionelecMateriel()">🗑️ Vider</button>
+</div>
+<div id="materielList" class="materiel-list"></div>
+<div id="materielTotal" class="materiel-total"></div>
+</div>
+
 <h2>Tableau de bord</h2><div class="grid">
 <div class="card"><div class="label">Clients</div><div class="stat" id="statClients">0</div></div><div class="card"><div class="label">Devis en cours</div><div class="stat" id="statDevis">0</div></div><div class="card"><div class="label">Factures</div><div class="stat" id="statFactures">0</div></div><div class="card"><div class="label">CA facturé HT</div><div class="stat" id="statCA">0 €</div></div><div class="card"><div class="label">À encaisser TTC</div><div class="stat" id="statDue">0 €</div></div><div class="card"><div class="label">Devis acceptés</div><div class="stat" id="statAccepted">0</div></div></div>
 <div class="card"><h3>Actions rapides</h3><div class="quick"><button class="blue" onclick="openClient()">👤 + Client</button><button onclick="openDocument('devis')">📋 + Devis</button><button class="green" onclick="openDocument('facture')">🧾 + Facture</button><button class="orange" onclick="openExpense()">💳 + Dépense</button><button class="green" onclick="openPayment()">💰 + Paiement</button><button class="gray" onclick="show('tarifs')">💶 Tarifs</button><button class="secondary" onclick="exportBackup()">💾 Sauvegarde</button><button class="secondary" onclick="exportCSV()">📊 Export CSV</button></div></div>
@@ -280,5 +304,43 @@ function renderSionelecChantiers(){
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 document.addEventListener("DOMContentLoaded",renderSionelecChantiers);
+</script>
+
+<script>
+function getSionelecMateriel(){
+  try{return JSON.parse(localStorage.getItem("sionelec_materiel")||"[]")}catch(e){return[]}
+}
+function saveSionelecMateriel(a){localStorage.setItem("sionelec_materiel",JSON.stringify(a))}
+function addSionelecMateriel(){
+  const nom=document.getElementById("matNom").value.trim();
+  const q=parseFloat(document.getElementById("matQte").value);
+  const achat=parseFloat(document.getElementById("matAchat").value);
+  const vente=parseFloat(document.getElementById("matVente").value);
+  if(!nom||!isFinite(q)||q<=0||!isFinite(achat)||achat<0||!isFinite(vente)||vente<0){
+    alert("Renseigne le matériel, la quantité, le prix d'achat et le prix de vente.");return;
+  }
+  const a=getSionelecMateriel();
+  a.push({id:Date.now(),nom,q,achat,vente});
+  saveSionelecMateriel(a);
+  ["matNom","matQte","matAchat","matVente"].forEach(id=>document.getElementById(id).value="");
+  renderSionelecMateriel();
+}
+function deleteSionelecMateriel(id){
+  saveSionelecMateriel(getSionelecMateriel().filter(x=>x.id!==id));renderSionelecMateriel();
+}
+function clearSionelecMateriel(){
+  if(confirm("Supprimer tout le matériel enregistré ?")){saveSionelecMateriel([]);renderSionelecMateriel();}
+}
+function renderSionelecMateriel(){
+  const list=document.getElementById("materielList"), total=document.getElementById("materielTotal");
+  if(!list||!total)return;
+  const a=getSionelecMateriel();
+  let achat=0,vente=0;
+  a.forEach(x=>{achat+=x.q*x.achat;vente+=x.q*x.vente});
+  const marge=vente-achat, taux=vente?marge/vente*100:0;
+  list.innerHTML=a.length?a.map(x=>`<div class="materiel-item"><b>${escapeHtml(x.nom)}</b><div class="chantier-small">${x.q} × ${x.achat.toFixed(2)} € HT achat = ${(x.q*x.achat).toFixed(2)} € · vente ${(x.q*x.vente).toFixed(2)} €</div><button class="secondary" style="margin-top:6px" onclick="deleteSionelecMateriel(${x.id})">Supprimer</button></div>`).join(""):"<div class='chantier-small'>Aucun matériel ajouté.</div>";
+  total.innerHTML=`Coût achat : ${achat.toFixed(2)} € HT · Vente : ${vente.toFixed(2)} € HT · <b>Marge : ${marge.toFixed(2)} € (${taux.toFixed(1)}%)</b>`;
+}
+document.addEventListener("DOMContentLoaded",renderSionelecMateriel);
 </script>
 </body></html>
