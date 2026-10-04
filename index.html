@@ -466,4 +466,53 @@ function actualiserDashboard(){
 document.addEventListener('DOMContentLoaded',actualiserDashboard);
 </script>
 
+
+<section class="card" id="agenda">
+<h2>📅 Agenda SIONELEC</h2>
+<p>Organise tes rendez-vous, dépannages et chantiers.</p>
+<div class="grid">
+<label>Objet<input id="ag_objet" placeholder="Ex. Dépannage Achenheim"></label>
+<label>Date<input id="ag_date" type="date"></label>
+<label>Heure<input id="ag_heure" type="time"></label>
+<label>Client<input id="ag_client" placeholder="Nom du client"></label>
+<label>Adresse<input id="ag_adresse" placeholder="Adresse du chantier"></label>
+<label>Statut<select id="ag_statut"><option>À faire</option><option>En cours</option><option>Terminé</option></select></label>
+</div>
+<button onclick="ajouterAgenda()">➕ Ajouter au planning</button>
+<div id="agenda_liste" style="margin-top:12px"></div>
+</section>
+
+
+<script>
+const AGENDA_KEY='sionelec_agenda';
+function agendaGet(){try{return JSON.parse(localStorage.getItem(AGENDA_KEY)||'[]')}catch(e){return[]}}
+function agendaSave(a){localStorage.setItem(AGENDA_KEY,JSON.stringify(a));afficherAgenda()}
+function ajouterAgenda(){
+ const objet=document.getElementById('ag_objet').value.trim();
+ const date=document.getElementById('ag_date').value;
+ const heure=document.getElementById('ag_heure').value;
+ if(!objet||!date){alert('Indique au minimum l’objet et la date.');return}
+ const a=agendaGet();
+ a.push({objet,date,heure,client:document.getElementById('ag_client').value.trim(),adresse:document.getElementById('ag_adresse').value.trim(),statut:document.getElementById('ag_statut').value});
+ agendaSave(a);
+}
+function statutAgenda(i){
+ const a=agendaGet();
+ const ordre=['À faire','En cours','Terminé'];
+ a[i].statut=ordre[(ordre.indexOf(a[i].statut)+1)%ordre.length];
+ agendaSave(a);
+}
+function supprimerAgenda(i){const a=agendaGet();a.splice(i,1);agendaSave(a)}
+function afficherAgenda(){
+ const a=agendaGet().sort((x,y)=>(x.date+' '+x.heure).localeCompare(y.date+' '+y.heure));
+ document.getElementById('agenda_liste').innerHTML=a.length?a.map((x,i)=>
+ '<div style="padding:10px 0;border-bottom:1px solid #ddd"><strong>'+x.objet+'</strong><br>'+
+ x.date+(x.heure?' à '+x.heure:'')+' — '+x.statut+
+ (x.client?'<br>👤 '+x.client:'')+(x.adresse?'<br>📍 '+x.adresse:'')+
+ '<br><button onclick="statutAgenda('+i+')">🔄 Changer statut</button> <button onclick="supprimerAgenda('+i+')">🗑️</button></div>'
+ ).join(''):'Aucun rendez-vous enregistré.';
+}
+document.addEventListener('DOMContentLoaded',afficherAgenda);
+</script>
+
 </body></html>
