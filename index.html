@@ -17,10 +17,30 @@
 .backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .backup-actions button{width:100%}
 .backup-note{font-size:12px;opacity:.72;line-height:1.4}
+
+.chantier-card{margin-top:14px;padding:16px}
+.chantier-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chantier-grid button{width:100%}
+.chantier-list{display:grid;gap:8px;margin-top:10px}
+.chantier-item{padding:10px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.chantier-item b{display:block;margin-bottom:4px}
+.chantier-photo{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:8px}
+.chantier-small{font-size:12px;opacity:.7}
 </style></head><body>
 <header><img class="logo" src="logo-sionelec.jpeg"><div><div class="brand">SIONELEC PRO</div><div class="sub">Électricité générale • Installation • Rénovation • Dépannage</div></div></header>
 <main>
-<section id="home" class="section active"><h2>Tableau de bord</h2><div class="grid">
+<section id="home" class="section active">
+<div class="card chantier-card">
+<h3>🏗️ Mode chantier</h3>
+<p class="chantier-small">Crée un dossier chantier et centralise photos, heures, matériel et notes.</p>
+<div class="chantier-grid">
+<button class="blue" onclick="newSionelecChantier()">➕ Nouveau chantier</button>
+<button class="secondary" onclick="document.getElementById('chantierPhotoInput').click()">📸 Ajouter photo</button>
+</div>
+<input id="chantierPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="addSionelecPhoto(event)">
+<div id="chantierList" class="chantier-list"></div>
+</div>
+<h2>Tableau de bord</h2><div class="grid">
 <div class="card"><div class="label">Clients</div><div class="stat" id="statClients">0</div></div><div class="card"><div class="label">Devis en cours</div><div class="stat" id="statDevis">0</div></div><div class="card"><div class="label">Factures</div><div class="stat" id="statFactures">0</div></div><div class="card"><div class="label">CA facturé HT</div><div class="stat" id="statCA">0 €</div></div><div class="card"><div class="label">À encaisser TTC</div><div class="stat" id="statDue">0 €</div></div><div class="card"><div class="label">Devis acceptés</div><div class="stat" id="statAccepted">0</div></div></div>
 <div class="card"><h3>Actions rapides</h3><div class="quick"><button class="blue" onclick="openClient()">👤 + Client</button><button onclick="openDocument('devis')">📋 + Devis</button><button class="green" onclick="openDocument('facture')">🧾 + Facture</button><button class="orange" onclick="openExpense()">💳 + Dépense</button><button class="green" onclick="openPayment()">💰 + Paiement</button><button class="gray" onclick="show('tarifs')">💶 Tarifs</button><button class="secondary" onclick="exportBackup()">💾 Sauvegarde</button><button class="secondary" onclick="exportCSV()">📊 Export CSV</button></div></div>
 <div class="card"><h3>📊 Synthèse</h3><div class="three"><div class="mini">Marge estimée<br><b id="statMargin">0 €</b></div><div class="mini">Dépenses<br><b id="statExpenses">0 €</b></div><div class="mini">Taux payé<br><b id="statPaidRate">0 %</b></div></div></div>
@@ -203,5 +223,62 @@ function importSionelecBackup(event){
   };
   reader.readAsText(file); event.target.value="";
 }
+</script>
+
+<script>
+function getSionelecChantiers(){
+  try{return JSON.parse(localStorage.getItem("sionelec_chantiers")||"[]")}catch(e){return[]}
+}
+function saveSionelecChantiers(x){localStorage.setItem("sionelec_chantiers",JSON.stringify(x))}
+function newSionelecChantier(){
+  const nom=prompt("Nom du chantier / client :"); if(!nom)return;
+  const note=prompt("Note du chantier (optionnel) :")||"";
+  const arr=getSionelecChantiers();
+  arr.unshift({id:Date.now(),nom,note,date:new Date().toISOString(),hours:0,materials:[],photos:[]});
+  saveSionelecChantiers(arr); renderSionelecChantiers();
+}
+function addSionelecPhoto(event){
+  const file=event.target.files&&event.target.files[0]; if(!file)return;
+  const arr=getSionelecChantiers();
+  if(!arr.length){alert("Crée d'abord un chantier.");event.target.value="";return}
+  const r=new FileReader();
+  r.onload=function(){
+    arr[0].photos=arr[0].photos||[];
+    arr[0].photos.unshift(r.result);
+    // Keep the most recent 10 photos to avoid excessive local storage usage.
+    arr[0].photos=arr[0].photos.slice(0,10);
+    saveSionelecChantiers(arr);renderSionelecChantiers();
+  };
+  r.readAsDataURL(file); event.target.value="";
+}
+function addChantierHours(id){
+  const h=parseFloat(prompt("Nombre d'heures à ajouter :","1"));
+  if(!isFinite(h)||h<=0)return;
+  const arr=getSionelecChantiers(), c=arr.find(x=>x.id===id); if(!c)return;
+  c.hours=(c.hours||0)+h;saveSionelecChantiers(arr);renderSionelecChantiers();
+}
+function addChantierNote(id){
+  const n=prompt("Nouvelle note :");if(!n)return;
+  const arr=getSionelecChantiers(),c=arr.find(x=>x.id===id);if(!c)return;
+  c.note=(c.note?c.note+" | ":"")+n;saveSionelecChantiers(arr);renderSionelecChantiers();
+}
+function renderSionelecChantiers(){
+  const el=document.getElementById("chantierList");if(!el)return;
+  const arr=getSionelecChantiers();
+  if(!arr.length){el.innerHTML="<div class='chantier-small'>Aucun chantier enregistré.</div>";return}
+  el.innerHTML=arr.map(c=>`
+    <div class="chantier-item">
+      <b>🏗️ ${escapeHtml(c.nom)}</b>
+      <div class="chantier-small">⏱️ ${c.hours||0} h · 📸 ${(c.photos||[]).length} photo(s)</div>
+      ${c.note?`<div class="chantier-small">📝 ${escapeHtml(c.note)}</div>`:""}
+      ${(c.photos||[]).slice(0,2).map(p=>`<img class="chantier-photo" src="${p}" alt="Photo chantier">`).join("")}
+      <div class="chantier-grid" style="margin-top:8px">
+        <button class="secondary" onclick="addChantierHours(${c.id})">⏱️ Heures</button>
+        <button class="secondary" onclick="addChantierNote(${c.id})">📝 Note</button>
+      </div>
+    </div>`).join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+document.addEventListener("DOMContentLoaded",renderSionelecChantiers);
 </script>
 </body></html>
