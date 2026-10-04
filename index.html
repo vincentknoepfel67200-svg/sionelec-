@@ -379,4 +379,52 @@ function calculerRentabilite(){
 }
 </script>
 
+
+<section class="card" id="suivi-heures">
+<h2>⏱️ Suivi des heures chantier</h2>
+<p>Enregistre tes journées et calcule automatiquement le total d'heures.</p>
+<div class="grid">
+<label>Chantier<input id="heure_chantier" placeholder="Ex. Achenheim"></label>
+<label>Date<input id="heure_date" type="date"></label>
+<label>Heure début<input id="heure_debut" type="time"></label>
+<label>Heure fin<input id="heure_fin" type="time"></label>
+<label>Pause (minutes)<input id="heure_pause" type="number" min="0" value="0"></label>
+</div>
+<button onclick="ajouterHeures()">➕ Ajouter la journée</button>
+<div id="heures_total" class="result" style="margin-top:12px"></div>
+<div id="heures_liste" style="margin-top:12px"></div>
+</section>
+
+
+<script>
+const HEURES_KEY='sionelec_heures';
+function getHeures(){try{return JSON.parse(localStorage.getItem(HEURES_KEY)||'[]')}catch(e){return[]}}
+function saveHeures(a){localStorage.setItem(HEURES_KEY,JSON.stringify(a));afficherHeures()}
+function ajouterHeures(){
+ const chantier=document.getElementById('heure_chantier').value.trim()||'Sans chantier';
+ const date=document.getElementById('heure_date').value||new Date().toISOString().slice(0,10);
+ const d=document.getElementById('heure_debut').value, f=document.getElementById('heure_fin').value;
+ const pause=+document.getElementById('heure_pause').value||0;
+ if(!d||!f){alert('Indique l’heure de début et de fin.');return}
+ let [dh,dm]=d.split(':').map(Number),[fh,fm]=f.split(':').map(Number);
+ let minutes=(fh*60+fm)-(dh*60+dm)-pause;
+ if(minutes<0) minutes+=1440;
+ if(minutes<=0){alert('La durée calculée est invalide.');return}
+ const a=getHeures(); a.push({chantier,date,d,f,pause,minutes});
+ saveHeures(a);
+}
+function supprimerHeure(i){const a=getHeures();a.splice(i,1);saveHeures(a)}
+function afficherHeures(){
+ const a=getHeures(), total=a.reduce((s,x)=>s+x.minutes,0);
+ const h=Math.floor(total/60),m=total%60;
+ document.getElementById('heures_total').innerHTML='<strong>Total enregistré : '+h+' h '+String(m).padStart(2,'0')+' min</strong>';
+ document.getElementById('heures_liste').innerHTML=a.length?
+ a.slice().reverse().map((x,j)=>{
+   const i=a.length-1-j, hh=Math.floor(x.minutes/60), mm=x.minutes%60;
+   return '<div style="padding:8px 0;border-bottom:1px solid #ddd"><strong>'+x.chantier+'</strong> — '+x.date+' — '+x.d+' → '+x.f+' — '+hh+'h'+String(mm).padStart(2,'0')+' <button onclick="supprimerHeure('+i+')">🗑️</button></div>'
+ }).join(''):'Aucune journée enregistrée.';
+}
+document.addEventListener('DOMContentLoaded',afficherHeures);
+</script>
+
 </body></html>
