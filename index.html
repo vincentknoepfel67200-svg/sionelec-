@@ -12,6 +12,11 @@
 .tarif-grid-img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid #e5e7eb;cursor:pointer}
 .tarif-grid-actions{display:flex;gap:8px;margin-top:9px}
 .tarif-grid-actions button{flex:1}
+
+.backup-card{margin-top:14px;padding:16px;border-radius:16px}
+.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.backup-actions button{width:100%}
+.backup-note{font-size:12px;opacity:.72;line-height:1.4}
 </style></head><body>
 <header><img class="logo" src="logo-sionelec.jpeg"><div><div class="brand">SIONELEC PRO</div><div class="sub">Électricité générale • Installation • Rénovation • Dépannage</div></div></header>
 <main>
@@ -147,4 +152,56 @@ function importBackup(input){let f=input.files[0];if(!f)return;let r=new FileRea
 function resetDemo(){if(confirm('ATTENTION : supprimer tous les clients, devis, factures et dépenses ?')){localStorage.removeItem(KEY);db=loadDB();renderAll();loadSettings()}}
 function renderAll(){renderDashboard();renderClients();renderDocs('devis');renderDocs('facture');renderTarifs();renderExpenses();renderRecent();renderPayments();loadSettings()}
 renderAll();
-</script></body></html>
+</script>
+<div class="card backup-card">
+<h3>💾 Sauvegarde SIONELEC</h3>
+<p class="backup-note">Sauvegarde tes clients, devis, factures, paiements et réglages dans un fichier. Tu peux le conserver dans Fichiers ou iCloud Drive et le restaurer plus tard.</p>
+<div class="backup-actions">
+<button class="blue" onclick="exportSionelecBackup()">⬇️ Sauvegarder</button>
+<button class="secondary" onclick="document.getElementById('sionelecBackupInput').click()">⬆️ Restaurer</button>
+</div>
+<input id="sionelecBackupInput" type="file" accept=".json,application/json" style="display:none" onchange="importSionelecBackup(event)">
+<p id="backupStatus" class="backup-note"></p>
+</div>
+
+<script>
+function sionelecCollectBackup(){
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    data[k]=localStorage.getItem(k);
+  }
+  return {format:"SIONELEC-PRO-BACKUP",version:"V11",exportedAt:new Date().toISOString(),data};
+}
+function exportSionelecBackup(){
+  try{
+    const payload=sionelecCollectBackup();
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const stamp=new Date().toISOString().slice(0,10);
+    a.href=url;a.download="SIONELEC-SAUVEGARDE-"+stamp+".json";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    const s=document.getElementById("backupStatus");
+    if(s)s.textContent="✅ Sauvegarde créée. Garde le fichier dans Fichiers/iCloud Drive.";
+  }catch(e){alert("Impossible de créer la sauvegarde.");}
+}
+function importSionelecBackup(event){
+  const file=event.target.files&&event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const payload=JSON.parse(reader.result);
+      if(!payload||payload.format!=="SIONELEC-PRO-BACKUP"||!payload.data)throw new Error();
+      if(!confirm("Restaurer cette sauvegarde ? Les données actuelles seront remplacées."))return;
+      localStorage.clear();
+      Object.keys(payload.data).forEach(k=>localStorage.setItem(k,payload.data[k]));
+      const s=document.getElementById("backupStatus");
+      if(s)s.textContent="✅ Sauvegarde restaurée. Rechargement…";
+      setTimeout(()=>location.reload(),700);
+    }catch(e){alert("Ce fichier n'est pas une sauvegarde SIONELEC valide.");}
+  };
+  reader.readAsText(file); event.target.value="";
+}
+</script>
+</body></html>
