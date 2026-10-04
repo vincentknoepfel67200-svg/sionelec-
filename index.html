@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SIONELEC">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>SIONELEC PRO</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f4f6;color:#111827}
+header{background:#0b1220;color:#fff;padding:10px 14px;position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px}
+.logo{width:55px;height:55px;border-radius:12px;object-fit:cover;background:white}.brand{font-size:22px;font-weight:900;letter-spacing:1px}.sub{opacity:.8;font-size:11px}
+main{padding:15px;max-width:900px;margin:auto}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:white;border-radius:16px;padding:15px;box-shadow:0 2px 10px #0000000d;margin-bottom:12px}
+.stat{font-size:25px;font-weight:800}.muted{color:#6b7280;font-size:13px}
+button{border:0;border-radius:12px;padding:13px 15px;font-weight:700;cursor:pointer;background:#0b1220;color:#fff}
+button.secondary{background:#e5e7eb;color:#111827}button.blue{background:#0879e8}button.green{background:#166534}
+nav{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;padding:7px 5px calc(7px + env(safe-area-inset-bottom));z-index:10}
+nav button{background:white;color:#374151;padding:8px 2px;font-size:10px}.active{color:#0879e8!important;font-weight:900!important}
+section{display:none;padding-bottom:90px}section.active{display:block}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;margin:6px 0 12px;font-size:16px;background:white}
+label{font-size:13px;font-weight:700}.row{display:flex;gap:8px}.row>*{flex:1}
+.item{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:12px 0}.item:last-child{border:0}
+.total{font-size:21px;font-weight:800;text-align:right;margin:6px 0}.pill{padding:5px 9px;border-radius:999px;background:#e5e7eb;font-size:11px;font-weight:700}
+h2{margin:4px 0 14px}h3{margin:4px 0 8px}.small{font-size:12px}
+.pricecat{border:1px solid #e5e7eb;border-radius:13px;margin-bottom:10px;overflow:hidden}.pricecat h3{padding:11px;margin:0;background:#f8fafc}.priceitem{display:flex;justify-content:space-between;gap:10px;padding:10px;border-top:1px solid #eee;font-size:13px}.priceitem b{white-space:nowrap}
+.badge{display:inline-block;padding:4px 8px;background:#e0f2fe;color:#075985;border-radius:8px;font-size:11px;font-weight:700}
+
+/* SIONELEC — iPhone first */
+html{background:#0b1220}
+body{min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+header{padding-top:max(10px,env(safe-area-inset-top));padding-left:16px;padding-right:16px}
+main{padding-left:14px;padding-right:14px}
+button{min-height:46px;-webkit-appearance:none}
+input,select,textarea{min-height:48px;-webkit-appearance:none}
+.card{border:1px solid rgba(17,24,39,.04)}
+nav{padding-bottom:max(8px,env(safe-area-inset-bottom));min-height:66px}
+@media (max-width:430px){
+ .brand{font-size:20px}.sub{font-size:10px}
+ .logo{width:50px;height:50px}
+ .grid{gap:8px}.card{padding:13px}
+ .stat{font-size:23px}
+ .row{gap:6px}
+ .row .price{min-width:78px}
+ .line{display:grid;grid-template-columns:1fr 64px 88px;gap:5px}
+ .line>*{min-width:0}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script></head>
+<body>
+<header>
+<img class="logo" src="logo-sionelec.jpeg">
+<div><div class="brand">SIONELEC PRO</div><div class="sub">Électricité générale • Installation • Rénovation • Dépannage</div></div>
+</header>
+<main>
+<section id="home" class="active">
+<h2>Tableau de bord</h2>
+<div class="grid">
+<div class="card"><div class="muted">Clients</div><div class="stat" id="statClients">0</div></div>
+<div class="card"><div class="muted">Devis</div><div class="stat" id="statDevis">0</div></div>
+<div class="card"><div class="muted">Factures</div><div class="stat" id="statFactures">0</div></div>
+<div class="card"><div class="muted">CA facturé HT</div><div class="stat" id="statCA">0 €</div></div>
+</div>
+<div class="card"><h3>Actions rapides</h3>
+<div class="row"><button class="blue" onclick="show('clients');newClient()">+ Client</button><button onclick="show('devis');newDevis()">+ Devis</button></div>
+<div style="height:8px"></div><div class="row"><button class="green" onclick="show('factures');newFacture()">+ Facture</button><button class="secondary" onclick="show('tarifs')">💶 Tarifs</button></div>
+</div>
+<div class="card"><h3>Derniers documents</h3><div id="recent"></div></div>
+</section>
+
+<section id="clients"><h2>Clients</h2><button class="blue" onclick="newClient()">+ Nouveau client</button><div id="clientList" class="card" style="margin-top:12px"></div></section>
+
+<section id="devis"><h2>Devis</h2><button onclick="newDevis()">+ Nouveau devis</button><div id="devisList" class="card" style="margin-top:12px"></div><div id="devisEditor"></div></section>
+
+<section id="factures"><h2>Factures</h2><button class="green" onclick="newFacture()">+ Nouvelle facture</button><div id="factureList" class="card" style="margin-top:12px"></div><div id="factureEditor"></div></section>
+
+<section id="tarifs"><h2>Tarifs SIONELEC</h2><div class="card"><span class="badge">Base : 50 € HT / heure</span><p class="small">Tarifs issus de ta grille SIONELEC. La TVA est sélectionnable dans les documents.</p></div><div id="tarifList"></div></section>
+
+<section id="settings"><h2>Entreprise</h2>
+<div class="card">
+<h3>📱 Installer sur l’iPhone</h3>
+<div class="small">Dans Safari : <b>Partager</b> → <b>Sur l’écran d’accueil</b> → <b>Ajouter</b>. SIONELEC s’ouvrira ensuite comme une application.</div>
+</div><div class="card">
+<label>Nom</label><input id="company" value="SIONELEC"><label>Téléphone</label><input id="phone" placeholder="Votre téléphone">
+<label>E-mail</label><input id="email" placeholder="Votre e-mail"><label>Adresse</label><textarea id="address" placeholder="Adresse de l'entreprise"></textarea>
+<button onclick="saveSettings()">Enregistrer</button></div>
+</section>
+</main>
+<nav>
+<button onclick="show('home')" id="n-home" class="active">🏠<br>Accueil</button>
+<button onclick="show('clients')" id="n-clients">👤<br>Clients</button>
+<button onclick="show('devis')" id="n-devis">📋<br>Devis</button>
+<button onclick="show('factures')" id="n-factures">🧾<br>Factures</button>
+<button onclick="show('settings')" id="n-settings">⚙️<br>Entreprise</button>
+</nav>
+<script>
+const key='sionelec_pro_v2';
+let db=JSON.parse(localStorage.getItem(key)||'null')||{
+clients:[],devis:[],factures:[],
+prestations:[
+{name:'Déplacement (Strasbourg)',price:30},{name:'1 heure de main-d’œuvre',price:50},{name:'2 heures de main-d’œuvre',price:100},
+{name:'3 heures de main-d’œuvre',price:150},{name:'4 heures (demi-journée)',price:200},{name:'8 heures (journée)',price:400},
+{name:'Intervention urgente (soir/week-end)',price:60},{name:'Remplacement disjoncteur',price:50},{name:'Ajout de disjoncteur',price:45},
+{name:'Remplacement interrupteur différentiel',price:60},{name:'Ajout d’un différentiel',price:70},{name:'Remplacement tableau (petit)',price:250},
+{name:'Remplacement tableau (complet)',price:500},{name:'Installation parafoudre',price:180},{name:'Barrette de terre / liaison équipotentielle',price:80},
+{name:'Mesure / contrôle de terre',price:90},{name:'Étiquetage et repérage tableau',price:70},{name:'Pose d’une prise simple',price:50},
+{name:'Remplacement d’une prise',price:40},{name:'Pose d’une prise double',price:65},{name:'Pose d’une prise triple',price:80},
+{name:'Prise USB / USB-C',price:70},{name:'Prise 20 A spécialisée',price:65},{name:'Prise 32 A (voiture, plaque...)',price:80},
+{name:'Pose interrupteur simple',price:50},{name:'Interrupteur double / va-et-vient',price:65},{name:'Interrupteur connecté',price:90},
+{name:'Télérupteur / minuterie',price:80},{name:'Variateur',price:70},{name:'Détecteur de mouvement',price:70},
+{name:'Sortie de câble / DCL',price:45},{name:'Prise extérieure étanche IP55',price:65},{name:'Pose d’un plafonnier',price:50},
+{name:'Pose d’un lustre',price:65},{name:'Pose d’une applique murale',price:50},{name:'Pose d’un spot',price:50},
+{name:'Pose de 3 spots',price:125},{name:'Pose de 5 spots',price:190},{name:'Détecteur de présence',price:75},
+{name:'Détecteur crépusculaire',price:70},{name:'Ruban LED (avec alimentation)',price:100},{name:'Remplacement alimentation LED',price:60},
+{name:'Création d’une ligne électrique',price:100},{name:'Création d’une prise avec ligne',price:125},{name:'Tirage de câble (au m)',price:40},
+{name:'Passage de câble en gaine existante',price:40},{name:'Pose de gaine ICTA (au m)',price:12},{name:'Pose de goulotte / moulure (au m)',price:16},
+{name:'Saignée dans mur (au m)',price:20},{name:'Pose de boîte d’encastrement',price:40},{name:'Pose de boîte de dérivation',price:40},
+{name:'Raccordement VMC simple flux',price:200},{name:'Raccordement VMC hygroréglable',price:200},{name:'Raccordement sèche-serviette',price:100},
+{name:'Diagnostic simple (1 h)',price:50},{name:'Diagnostic complexe (2 h)',price:100},{name:'Recherche de panne',price:100},
+{name:'Mise en sécurité électrique',price:150},{name:'Mise aux normes partielle',price:300},{name:'Fourniture et pose d’étiquettes',price:40}
+],
+settings:{company:'SIONELEC',phone:'',email:'',address:''}};
+function save(){localStorage.setItem(key,JSON.stringify(db));render()}
+function eur(n){return Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR'})}
+function show(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));let n=document.getElementById('n-'+id);if(n)n.classList.add('active');render()}
+function nextNum(type){let y=new Date().getFullYear();let arr=type==='DEV'?db.devis:db.factures;return `${type}${y}-${String(arr.length+1).padStart(3,'0')}`}
+function newClient(){let nom=prompt('Nom du client');if(!nom)return;let tel=prompt('Téléphone')||'';let adr=prompt('Adresse du chantier')||'';db.clients.push({id:Date.now(),nom,tel,adr});save();show('clients')}
+function clientOptions(){return db.clients.map(c=>`<option value="${c.id}">${c.nom}${c.adr?' — '+c.adr:''}</option>`).join('')}
+function lineHTML(l){return `<div class="row line"><select onchange="linePrest(this)"><option value="">Choisir</option>${db.prestations.map(p=>`<option data-price="${p.price}" ${p.name===l.name?'selected':''}>${p.name}</option>`).join('')}</select><input class="qty" type="number" value="${l.qty||1}" min="0" step="0.5"><input class="price" type="number" value="${l.price||0}" min="0" step="0.01"></div>`}
+function editor(type,obj){
+ let lines=obj.lines||[{name:'1 heure de main-d’œuvre',qty:1,price:50}];
+ return `<div class="card"><h3>${type==='devis'?'Nouveau devis':'Nouvelle facture'} <span class="badge">${obj.number||''}</span></h3>
+ <label>Client</label><select id="docClient">${clientOptions()}</select>
+ <label>Prestations</label><div id="lines">${lines.map(lineHTML).join('')}</div>
+ <button class="secondary" onclick="addLine()">+ Ajouter une ligne</button>
+ <div class="total">Total HT : <span id="totalHT"></span></div>
+ <label>TVA</label><select id="tva"><option value="0">0 % — Franchise en base</option><option value="10">10 %</option><option value="20">20 %</option></select>
+ <div class="total">Total TTC : <span id="totalTTC"></span></div>
+ <label>Signature client</label>
+ <canvas id="signature" width="700" height="220" style="width:100%;height:160px;border:1px solid #d1d5db;border-radius:10px;background:white;touch-action:none"></canvas>
+ <div class="row"><button class="secondary" onclick="clearSignature()">Effacer</button><button class="blue" onclick="saveDoc('${type}',${obj.id||0},'${obj.number||''}')">Enregistrer</button></div>
+ <div style="height:8px"></div>
+ <button class="green" onclick="generatePDF('${type}','${obj.number||''}')">📄 Générer le PDF</button>
+ <button class="secondary" onclick="document.getElementById('${type}Editor').innerHTML=''">Annuler</button></div>`;
+}
+function linePrest(sel){let o=sel.options[sel.selectedIndex];if(o.dataset.price!==undefined)sel.parentElement.querySelector('.price').value=o.dataset.price;calcDoc()}
+function addLine(){document.getElementById('lines').insertAdjacentHTML('beforeend',lineHTML({name:'',qty:1,price:0}));calcDoc()}
+function calcDoc(){let ht=0;document.querySelectorAll('.line').forEach(x=>ht+=(+x.querySelector('.qty').value||0)*(+x.querySelector('.price').value||0));let t=+(document.getElementById('tva')?.value||0);if(document.getElementById('totalHT'))document.getElementById('totalHT').textContent=eur(ht);if(document.getElementById('totalTTC'))document.getElementById('totalTTC').textContent=eur(ht*(1+t/100))}
+function newDevis(){if(!db.clients.length){alert('Crée d’abord un client.');show('clients');return}let o={id:Date.now(),number:nextNum('DEV'),lines:[{name:'1 heure de main-d’œuvre',qty:1,price:50}]};document.getElementById('devisEditor').innerHTML=editor('devis',o);setTimeout(()=>{calcDoc();initSignature()},0)}
+function newFacture(){if(!db.clients.length){alert('Crée d’abord un client.');show('clients');return}let o={id:Date.now(),number:nextNum('FAC'),lines:[{name:'Dépannage électrique',qty:1,price:90}]};document.getElementById('factureEditor').innerHTML=editor('facture',o);setTimeout(()=>{calcDoc();initSignature()},0)}
+function saveDoc(type,id,num){let clientId=+document.getElementById('docClient').value,lines=[];document.querySelectorAll('.line').forEach(x=>{let name=x.querySelector('select').value;if(name)lines.push({name,qty:+x.querySelector('.qty').value||0,price:+x.querySelector('.price').value||0})});let ht=lines.reduce((a,l)=>a+l.qty*l.price,0),t=+document.getElementById('tva').value,arr=type==='devis'?db.devis:db.factures;arr.push({id:id||Date.now(),number:num||nextNum(type==='devis'?'DEV':'FAC'),clientId,lines,ht,tva:t,total:ht*(1+t/100),date:new Date().toLocaleDateString('fr-FR')});save();document.getElementById(type+'Editor').innerHTML='';show(type==='devis'?'devis':'factures')}
+
+let sigCtx=null,sigDrawing=false;
+function initSignature(){
+ const c=document.getElementById('signature'); if(!c)return;
+ sigCtx=c.getContext('2d'); sigCtx.lineWidth=3; sigCtx.lineCap='round';
+ const pos=e=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return [(t.clientX-r.left)*c.width/r.width,(t.clientY-r.top)*c.height/r.height]};
+ const down=e=>{e.preventDefault();sigDrawing=true;let [x,y]=pos(e);sigCtx.beginPath();sigCtx.moveTo(x,y)};
+ const move=e=>{if(!sigDrawing)return;e.preventDefault();let [x,y]=pos(e);sigCtx.lineTo(x,y);sigCtx.stroke()};
+ const up=()=>sigDrawing=false;
+ c.addEventListener('mousedown',down);c.addEventListener('mousemove',move);window.addEventListener('mouseup',up);
+ c.addEventListener('touchstart',down,{passive:false});c.addEventListener('touchmove',move,{passive:false});window.addEventListener('touchend',up);
+}
+function clearSignature(){const c=document.getElementById('signature');if(c&&sigCtx)sigCtx.clearRect(0,0,c.width,c.height)}
+function collectDoc(){
+ let clientId=+document.getElementById('docClient').value,lines=[];
+ document.querySelectorAll('.line').forEach(x=>{let name=x.querySelector('select').value;if(name)lines.push({name,qty:+x.querySelector('.qty').value||0,price:+x.querySelector('.price').value||0})});
+ let ht=lines.reduce((a,l)=>a+l.qty*l.price,0),t=+document.getElementById('tva').value;
+ return {clientId,lines,ht,tva:t,total:ht*(1+t/100),signature:document.getElementById('signature')?.toDataURL()||null};
+}
+function saveDoc(type,id,num){
+ let d=collectDoc(),arr=type==='devis'?db.devis:db.factures;
+ arr.push({id:id||Date.now(),number:num||nextNum(type==='devis'?'DEV':'FAC'),...d,date:new Date().toLocaleDateString('fr-FR')});
+ save();document.getElementById(type+'Editor').innerHTML='';show(type==='devis'?'devis':'factures');
+}
+function generatePDF(type,num){
+ if(!window.jspdf){alert('Le module PDF n’est pas encore chargé. Vérifie ta connexion internet.');return}
+ const {jsPDF}=window.jspdf, d=collectDoc(), c=db.clients.find(x=>x.id===d.clientId), doc=new jsPDF();
+ const title=type==='devis'?'DEVIS':'FACTURE';
+ doc.setFillColor(11,18,32);doc.rect(0,0,210,34,'F');
+ doc.setTextColor(255,255,255);doc.setFontSize(24);doc.setFont(undefined,'bold');doc.text('SIONELEC',15,18);
+ doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text('ÉLECTRICITÉ GÉNÉRALE • INSTALLATION • RÉNOVATION • DÉPANNAGE',15,27);
+ doc.setTextColor(17,24,39);doc.setFontSize(18);doc.setFont(undefined,'bold');doc.text(title,15,50);
+ doc.setFontSize(10);doc.setFont(undefined,'normal');doc.text(num,150,50);
+ doc.text('Client : '+(c?.nom||''),15,62);doc.text('Adresse : '+(c?.adr||''),15,69);doc.text('Date : '+new Date().toLocaleDateString('fr-FR'),15,76);
+ let y=90;doc.setFont(undefined,'bold');doc.text('Prestation',15,y);doc.text('Qté',135,y);doc.text('PU HT',155,y);doc.text('Total HT',180,y);
+ doc.setFont(undefined,'normal');y+=8;
+ d.lines.forEach(l=>{doc.text(l.name.substring(0,65),15,y);doc.text(String(l.qty),137,y);doc.text(eur(l.price),153,y);doc.text(eur(l.qty*l.price),178,y);y+=7});
+ doc.setFont(undefined,'bold');doc.text('Total HT : '+eur(d.ht),140,y+8);
+ doc.text('TVA : '+d.tva+' %',140,y+16);doc.text('Total TTC : '+eur(d.total),140,y+24);
+ doc.setFont(undefined,'normal');doc.setFontSize(8);doc.text('Micro-entreprise — franchise en base de TVA si applicable.',15,270);
+ if(d.signature){doc.text('Signature client',15,238);doc.addImage(d.signature,'PNG',15,242,70,22)}
+ doc.save((num||title)+'.pdf');
+}
+setTimeout(initSignature,150);
+function saveSettings(){db.settings.company=document.getElementById('company').value;db.settings.phone=document.getElementById('phone').value;db.settings.email=document.getElementById('email').value;db.settings.address=document.getElementById('address').value;save();alert('Coordonnées enregistrées.')}
+function render(){document.getElementById('statClients').textContent=db.clients.length;document.getElementById('statDevis').textContent=db.devis.length;document.getElementById('statFactures').textContent=db.factures.length;document.getElementById('statCA').textContent=eur(db.factures.reduce((a,x)=>a+x.ht,0));document.getElementById('clientList').innerHTML=db.clients.length?db.clients.map(c=>`<div class="item"><div><b>${c.nom}</b><div class="muted">${c.tel||''}<br>${c.adr||''}</div></div></div>`).join(''):'Aucun client.';document.getElementById('devisList').innerHTML=db.devis.length?db.devis.map(docHTML).join(''):'Aucun devis.';document.getElementById('factureList').innerHTML=db.factures.length?db.factures.map(docHTML).join(''):'Aucune facture.';document.getElementById('recent').innerHTML=[...db.factures,...db.devis].sort((a,b)=>b.id-a.id).slice(0,5).map(docHTML).join('')||'Aucun document.';document.getElementById('tarifList').innerHTML=db.prestations.map((p,i)=>`<div class="pricecat"><div class="priceitem"><span>${p.name}</span><b>${eur(p.price)} HT</b></div></div>`).join('');let s=db.settings;document.getElementById('company').value=s.company;document.getElementById('phone').value=s.phone;document.getElementById('email').value=s.email;document.getElementById('address').value=s.address}
+function docHTML(d){let c=db.clients.find(x=>x.id===d.clientId);return `<div class="item"><div><b>${d.number}</b> — ${c?.nom||'Client'}<div class="muted">${d.date} · ${eur(d.total)} TTC</div></div><button class="secondary" onclick="shareWhatsApp('${d.number}','${c?.nom||''}',${d.total})">WhatsApp</button></div>`}
+function shareWhatsApp(num,nom,total){
+ const msg=encodeURIComponent(`Bonjour ${nom}, voici votre ${num} SIONELEC d’un montant de ${eur(total)} TTC.`);
+ window.open('https://wa.me/?text='+msg,'_blank');
+}
+render();document.addEventListener('input',e=>{if(e.target.matches('.qty,.price'))calcDoc()});document.addEventListener('change',e=>{if(e.target.id==='tva')calcDoc()});
+</script>
+</body></html>
