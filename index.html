@@ -515,4 +515,39 @@ function afficherAgenda(){
 document.addEventListener('DOMContentLoaded',afficherAgenda);
 </script>
 
+
+<section class="card" id="email-envoi">
+<h2>📧 Envoi des devis & factures</h2>
+<p>Prépare un e-mail directement depuis ton iPhone.</p>
+<div class="grid">
+<label>Type<select id="mail_type"><option>Devis</option><option>Facture</option></select></label>
+<label>N° document<input id="mail_num" placeholder="DEV2026-001"></label>
+<label>E-mail client<input id="mail_email" type="email" placeholder="client@email.fr"></label>
+<label>Nom du client<input id="mail_client" placeholder="Nom du client"></label>
+<label>Montant TTC<input id="mail_montant" type="number" step="0.01" placeholder="0"></label>
+</div>
+<button onclick="preparerEmail()">📧 Préparer l’e-mail</button>
+<p style="font-size:.9em;margin-top:10px">Sur iPhone, Mail s’ouvrira avec le destinataire, l’objet et le message préremplis. Tu pourras joindre le PDF depuis l’app Fichiers.</p>
+</section>
+
+
+<script>
+function preparerEmail(){
+ const type=document.getElementById('mail_type').value;
+ const num=document.getElementById('mail_num').value.trim();
+ const email=document.getElementById('mail_email').value.trim();
+ const client=document.getElementById('mail_client').value.trim()||'Madame, Monsieur';
+ const montant=document.getElementById('mail_montant').value;
+ if(!email){alert("Indique l’e-mail du client.");return}
+ const objet=encodeURIComponent(type+" "+num+" - SIONELEC");
+ const corps=encodeURIComponent(
+ "Bonjour "+client+",\\n\\n"+
+ "Veuillez trouver ci-joint votre "+type.toLowerCase()+" "+num+
+ (montant?" d’un montant de "+montant+" € TTC.":"." )+
+ "\\n\\nJe reste à votre disposition pour toute question.\\n\\nCordialement,\\nSIONELEC"
+ );
+ window.location.href="mailto:"+encodeURIComponent(email)+"?subject="+objet+"&body="+corps;
+}
+</script>
+
 </body></html>
