@@ -427,4 +427,43 @@ function afficherHeures(){
 document.addEventListener('DOMContentLoaded',afficherHeures);
 </script>
 
+
+<section class="card" id="dashboard">
+<h2>📊 Tableau de bord SIONELEC</h2>
+<p>Vue rapide de ton activité enregistrée dans l’application.</p>
+<div class="grid">
+<div class="result"><strong id="dash_ca">0,00 €</strong><br>CA enregistré HT</div>
+<div class="result"><strong id="dash_benef">0,00 €</strong><br>Bénéfice estimé</div>
+<div class="result"><strong id="dash_marge">0,0 %</strong><br>Marge moyenne</div>
+<div class="result"><strong id="dash_heures">0 h 00</strong><br>Heures enregistrées</div>
+<div class="result"><strong id="dash_chantiers">0</strong><br>Chantiers suivis</div>
+<div class="result"><strong id="dash_materiel">0,00 €</strong><br>Matériel acheté HT</div>
+</div>
+<button onclick="actualiserDashboard()">🔄 Actualiser</button>
+</section>
+
+
+<script>
+function euro(n){return (n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
+function arrLS(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}}
+function actualiserDashboard(){
+ const heures=arrLS('sionelec_heures'), mats=arrLS('sionelec_materiel');
+ const totalMin=heures.reduce((s,x)=>s+(+x.minutes||0),0);
+ const h=Math.floor(totalMin/60),m=totalMin%60;
+ document.getElementById('dash_heures').textContent=h+' h '+String(m).padStart(2,'0');
+ const matAchat=mats.reduce((s,x)=>s+(+x.qty||0)*(+x.purchase||0),0);
+ document.getElementById('dash_materiel').textContent=euro(matAchat);
+ const ch=[...new Set(heures.map(x=>x.chantier).filter(Boolean))];
+ document.getElementById('dash_chantiers').textContent=ch.length;
+ // Use recorded material sales and purchases when available.
+ const ca=mats.reduce((s,x)=>s+(+x.qty||0)*(+x.sale||0),0);
+ const benef=ca-matAchat;
+ const marge=ca>0?benef/ca*100:0;
+ document.getElementById('dash_ca').textContent=euro(ca);
+ document.getElementById('dash_benef').textContent=euro(benef);
+ document.getElementById('dash_marge').textContent=marge.toFixed(1)+' %';
+}
+document.addEventListener('DOMContentLoaded',actualiserDashboard);
+</script>
+
 </body></html>
