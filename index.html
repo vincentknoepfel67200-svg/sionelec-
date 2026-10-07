@@ -550,4 +550,30 @@ function preparerEmail(){
 }
 </script>
 
+
+<section class="card" id="export-documents">
+<h2>📄 Export PDF — devis & factures</h2>
+<p>Génère un document puis utilise le partage iPhone pour Mail, WhatsApp ou Fichiers.</p>
+<div class="grid">
+<label>Type<select id="pdf_type"><option>Devis</option><option>Facture</option></select></label>
+<label>N° document<input id="pdf_num" placeholder="DEV2026-001"></label>
+<label>Client<input id="pdf_client" placeholder="Nom du client"></label>
+<label>Montant HT<input id="pdf_ht" type="number" step="0.01" placeholder="0"></label>
+</div>
+<button onclick="exporterPDF()">📄 Générer / partager le PDF</button>
+</section>
+
+<script>
+function exporterPDF(){
+ const type=document.getElementById('pdf_type').value;
+ const num=document.getElementById('pdf_num').value.trim()||'Sans numéro';
+ const client=document.getElementById('pdf_client').value.trim()||'Client';
+ const ht=+document.getElementById('pdf_ht').value||0;
+ const w=window.open('','_blank');
+ if(!w){alert("Autorise les fenêtres contextuelles pour générer le PDF.");return}
+ w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>SIONELEC</title><style>body{font-family:Arial;padding:40px;max-width:800px;margin:auto}button{padding:12px 18px}@media print{button{display:none}}</style></head><body><h1>SIONELEC</h1><h2>'+type+' '+num+'</h2><p><b>Client :</b> '+client+'</p><p><b>Montant HT :</b> '+ht.toFixed(2)+' €</p><button onclick="window.print()">🖨️ Enregistrer / partager en PDF</button></body></html>');
+ w.document.close();
+ setTimeout(function(){w.print()},300);
+}
+</script>
 </body></html>
